@@ -166,9 +166,6 @@ Teamat follows the **Plain UI** design system—a philosophy that prioritizes co
 
 ---
 
-## 🛡️ License
-This project is licensed under the **MIT License**.
-
 ## 🙌 Author
 Developed by **Prabor Kar**  
 - [Portfolio](https://prabor.netlify.app)
