@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import EmojiPicker from "emoji-picker-react";
 import { useSocketContext } from "../context/SocketProvider";
 import api from "../api/api";
 import { FiSmile, FiPaperclip, FiSend, FiX, FiFileText } from "react-icons/fi";
@@ -12,6 +13,7 @@ export default function ChatInput({ channelId }) {
   const [file, setFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef(null);
   const { socket } = useSocketContext();
   const { addLocalMessage } = useMessages(channelId);
@@ -55,8 +57,8 @@ export default function ChatInput({ channelId }) {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
 
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      toast.error("File is too large (max 5MB)");
+    if (selectedFile.size > 25 * 1024 * 1024) {
+      toast.error("File is too large (max 25MB)");
       return;
     }
 
@@ -73,6 +75,11 @@ export default function ChatInput({ channelId }) {
     setFile(null);
     setFilePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const onEmojiClick = (emojiData) => {
+    setText((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
   };
 
   async function sendMessage() {
@@ -195,16 +202,32 @@ export default function ChatInput({ channelId }) {
         {/* Glow top highlight */}
         <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-b from-white/5 to-transparent opacity-20" />
 
-        {/* Emoji (kept for UI consistency) */}
-        <button
-          className="
-            text-[var(--text-secondary)] hover:text-[var(--text-primary)]
-            hover:scale-110 active:scale-95
-            transition transform
-          "
-        >
-          <FiSmile className="w-5 h-5" />
-        </button>
+        {/* Emoji Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="
+              text-[var(--text-secondary)] hover:text-[var(--text-primary)]
+              hover:scale-110 active:scale-95
+              transition transform
+            "
+          >
+            <FiSmile className="w-5 h-5" />
+          </button>
+
+          {showEmojiPicker && (
+            <div className="absolute bottom-12 left-0 z-50 animate-in slide-in-from-bottom-2 duration-200">
+              <EmojiPicker 
+                onEmojiClick={onEmojiClick}
+                theme="light"
+                searchDisabled
+                skinTonesDisabled
+                width={300}
+                height={400}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Textarea */}
         <textarea

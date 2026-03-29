@@ -113,7 +113,10 @@ export default function Sidebar({ onSelect }) {
       >
           {/* Avatar + Status + Info */}
           <div 
-            onClick={() => navigate("/app/profile")}
+            onClick={() => {
+              navigate("/app/profile");
+              onSelect && onSelect();
+            }}
             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-all group"
           >
             {/* Avatar */}
@@ -146,7 +149,6 @@ export default function Sidebar({ onSelect }) {
             {/* User info */}
             <div className="leading-tight">
               <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">{user?.name}</p>
-              <p className="text-[11px] text-[var(--text-secondary)]">{user?.email}</p>
             </div>
           </div>
 

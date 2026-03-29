@@ -180,7 +180,6 @@ export default function ChannelInfoPage() {
                   </div>
                   <div>
                     <div className="text-[15px] font-bold text-[var(--text-primary)]">{member.name}</div>
-                    <div className="text-xs text-[var(--text-muted)] font-medium">{member.email}</div>
                   </div>
                 </div>
               );
