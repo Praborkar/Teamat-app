@@ -138,7 +138,7 @@ Teamat/
 ## 🚀 Deployment Guide
 
 ### 📂 Frontend (Vercel)
-1. **Prepare**: Ensure `chat-frontend/vercel.json` exists (added by Antigravity).
+1. **Prepare**: Ensure `chat-frontend/vercel.json` exists .
 2. **Deploy**: Push your code to GitHub and connect the `chat-frontend` folder to Vercel.
 3. **Build Settings**: 
    - Framework: `Vite`
