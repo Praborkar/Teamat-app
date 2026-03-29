@@ -1,312 +1,150 @@
-# 🚀 Real-Time Team Chat Application  
-### **Full-Stack Chat App (React + Node.js + Socket.IO + MongoDB)**
+# 🛰️ Teamat
 
-A complete real-time chat application featuring authentication, channels, real-time messaging, online presence, and message pagination.  
-Frontend built with **React, Vite, Tailwind, React Query, Socket.IO client**.  
-Backend built with **Node.js, Express, Socket.IO, MongoDB, JWT, Mongoose**.
+### **Elevated Real-Time Collaboration**
+**Teamat** is a professional, minimalist, and high-performance real-time chat application designed for seamless team communication. Built with a "Plain UI" philosophy, it focuses on extreme clarity, speed, and premium user experience.
 
 ---
 
-# 📌 Features Overview
+## ✨ Features
 
-### ✅ **Frontend Features**
-- 🔐 JWT Authentication (Login + Signup)
-- 🧭 Protected Routes with Redirects
-- 📡 Real-time messaging (Socket.IO client)
-- 💬 Slack-like UI using Tailwind CSS
-- 📚 Message history with **infinite scroll pagination**
-- 🔔 Online/offline presence sidebar
-- 📁 Channel system:
-  - List channels
-  - Create new channel (modal)
-  - Join / Leave channels
-- 💾 LocalStorage token persistence
-- 🎨 Clean 3-column layout:  
-  **Sidebar → Chat → Presence panel**
-- 🚀 React Query for data fetching + caching
+### 💎 Core Experience
+- **Plain UI Design**: A stunning, full-bleed minimalist interface that eliminates distractions and maximizes focus.
+- **Ultra-Fast Real-Time Messaging**: Powered by Socket.IO with optimistic UI updates for near-instant interaction.
+- **Universal Search**: Quickly find channels and teammates with integrated search across the platform.
+- **Presence 2.0**: Real-time online/offline status tracking with advanced presence indicators.
+- **Multilingual Support**: Integrated language selector with real-time interface translation.
 
----
+### 📁 Channel management
+- **Dynamic Channels**: Create, rename, and manage channels with ease.
+- **Danger Zone Actions**: Securely delete channels with portaled confirmation dialogs.
+- **Member Control**: Add teammates by email and manage channel membership instantly.
+- **Infinite History**: Fluid message history with optimized infinite scroll pagination.
 
-### ✅ **Backend Features**
-- 🔐 JWT-based Authentication (Signup & Login)
-- ⚡ Real-time messaging with Socket.IO
-- 🎯 Presence tracking (online/offline)
-- 💾 MongoDB Atlas + Mongoose models:
-  - Users
-  - Channels
-  - Messages
-  - Presence
-- 📡 Pagination API (20 messages per page)
-- 🔒 Auth middleware for protected routes
-- 🌐 CORS enabled for frontend access
-- 🧩 Modular folder structure
-- ☁️ Ready for Render Deployment
+### 👤 User Control
+- **Functional Profiles**: Edit your name, email, and password directly within the app.
+- **Secure Authentication**: Robust JWT-based auth flow with protected routing.
+- **Responsive by Design**: A truly mobile-first architecture that scales perfectly from smartphones to ultrawide monitors.
 
 ---
 
-# 📁 Folder Structure
+## 🛠️ Technology Stack
 
-```
-frontend/
-  src/
-    api/
-    components/
-    pages/
-    hooks/
-    context/
-    layout/
-    App.jsx
-    main.jsx
-
-backend/
-  src/
-    models/
-    routes/
-    middleware/
-    socket/
-    config/
-    server.js
-  package.json
-  .env
-```
+| Layer | Technologies |
+|-------|--------------|
+| **Frontend** | React 18, Vite, Tailwind CSS, React Query, Socket.IO Client |
+| **Backend** | Node.js, Express, Socket.IO, JWT, Mongoose |
+| **Database** | MongoDB Atlas |
+| **Real-time** | WebSockets (Socket.IO) |
 
 ---
 
-# ⚙️ Frontend Setup Guide
+## 🚀 Getting Started
 
-### 1️⃣ **Clone Repository**
+### 1️⃣ Prerequisites
+- Node.js (v16+)
+- MongoDB Atlas account (or local MongoDB)
+- npm or yarn
+
+### 2️⃣ Clone and Install
 ```sh
-git clone https://github.com/your-repo/chat-app.git
-cd frontend
+git clone https://github.com/your-repo/teamat.git
+cd teamat
 ```
 
-### 2️⃣ **Install Dependencies**
-```sh
-npm install
-```
-
-### 3️⃣ **Create ENV**
-Create `.env` inside `frontend/`
-
-```
-VITE_API_URL=http://localhost:4000
-```
-
-### 4️⃣ **Run Dev Server**
-```sh
-npm run dev
-```
-
----
-
-# 🌐 Backend Setup Guide
-
-### 1️⃣ **Install Dependencies**
+### 3️⃣ Backend Setup
 ```sh
 cd backend
 npm install
 ```
-
-### 2️⃣ **Setup Environment Variables**
-
-Create `.env`:
-
-```
-MONGO_URI=your_mongodb_atlas_connection_string
-JWT_SECRET=your_jwt_secret
+Create a `.env` file in the `backend` directory:
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key
 PORT=4000
 ```
-
-### 3️⃣ **Run Backend**
+Start the backend server:
 ```sh
 npm run dev
 ```
 
-Or production build:
-
+### 4️⃣ Frontend Setup
 ```sh
-npm start
-```
-
----
-
-# 🚀 Running Full System
-
-1. Start backend:  
-   ```sh
-   cd backend && npm run dev
-   ```
-
-2. Start frontend:
-   ```sh
-   cd frontend && npm run dev
-   ```
-
-3. Visit the app:  
-   👉 http://localhost:5173
-
----
-
-# 🔌 Backend API Endpoints
-
-### **Auth**
-| Method | Endpoint | Description |
-|--------|-------------|--------------|
-| POST | /auth/signup | Create user |
-| POST | /auth/login | Login + get JWT |
-
-### **Channels**
-| Method | Endpoint | Description |
-|--------|-------------|--------------|
-| GET | /channels | List all channels |
-| POST | /channels | Create channel |
-| POST | /channels/:id/join | Join channel |
-| POST | /channels/:id/leave | Leave channel |
-
-### **Messages**
-| Method | Endpoint | Description |
-|--------|-------------|--------------|
-| GET | /messages/:channelId?page=n | Fetch paginated messages |
-
----
-
-# ⚡ Real-Time Events (Socket.IO)
-
-### Client → Server  
-| Event | Payload |
-|--------|---------|
-| joinChannel | { channelId } |
-| sendMessage | { channelId, text } |
-
-### Server → Client  
-| Event | Payload |
-|--------|---------|
-| newMessage | { message } |
-| presence:update | [ { userId, isOnline } ] |
-
----
-
-# 🗄 MongoDB Models
-
-### ✔ **User**
-- name  
-- email  
-- password  
-- timestamps  
-
-### ✔ **Channel**
-- name  
-- members: [userIds]
-
-### ✔ **Message**
-- channelId  
-- userId  
-- text  
-- createdAt  
-
-### ✔ **Presence**
-- userId  
-- isOnline  
-- lastActive  
-
----
-
-# 🧠 Frontend Architecture
-
-### 🔹 Hooks
-| Hook | Purpose |
-|------|----------|
-| useAuth | login/signup + token handling |
-| useChannels | list/create/join/leave channels |
-| useMessages | fetch + paginate messages |
-| useSocket | socket connection wrapper |
-
-### 🔹 Components
-- Sidebar
-- ChannelList
-- ChatHeader
-- MessageList + MessageItem
-- ChatInput
-- CreateChannelModal
-- OnlineUsersPanel
-- Loader
-
-### 🔹 Context
-- SocketProvider  
-- Auth context (optional)
-
----
-
-# 📸 UI Highlights
-
-✔ Slack-style sidebar  
-✔ Smooth message list with auto-scroll  
-✔ Realtime status indicators  
-✔ Modern fonts + Tailwind styling  
-
----
-
-# 🌍 Deploying Backend on Render
-
-1. Create new **Web Service**
-2. Add repo → backend folder
-3. Add ENV variables (Mongo URI, JWT secret)
-4. Set build command:
-```
+cd ../chat-frontend
 npm install
 ```
-5. Set start command:
+Create a `.env` file in the `chat-frontend` directory:
+```env
+VITE_API_URL=http://localhost:4000
 ```
-node src/server.js
+Start the development server:
+```sh
+npm run dev
 ```
 
 ---
 
-# 🌐 Deploying Frontend (Netlify / Vercel)
+## 🔌 API Reference
 
-### Build command:
-```
-npm run build
-```
+### **Authentication**
+- `POST /auth/signup` — Register a new account.
+- `POST /auth/login` — Sign in and receive a JWT.
+- `PUT /auth/profile` — Update user profile details.
 
-### Output:
-```
-dist
-```
+### **Channels**
+- `GET /channels` — Retrieve all joined channels.
+- `POST /channels` — Create a new channel.
+- `PUT /channels/:id` — Rename an existing channel.
+- `DELETE /channels/:id` — Permanently delete a channel.
+- `POST /channels/:id/join` — Join a channel.
 
-Set `VITE_API_URL` to your deployed backend URL.
-
----
-
-# 🧪 Testing Features
-
-### ✔ Signup / Login  
-### ✔ Create channel  
-### ✔ Send & receive messages in real-time  
-### ✔ Multiple tabs → individual presence updates  
-### ✔ Infinite scroll pagination  
-### ✔ Join/leave channels  
-### ✔ Auto-refresh presence list  
+### **Messages**
+- `GET /messages/:channelId?page=n` — Fetch paginated message history.
 
 ---
 
-# 🤝 Contributing
+## 📡 Socket.IO Events
 
-1. Fork project  
-2. Create a new branch  
-3. Submit PR 🎉  
+| Direction | Event | Description |
+|-----------|-------|-------------|
+| Client → Server | `joinChannel` | Join a specific channel room |
+| Client → Server | `sendMessage` | Send a new real-time message |
+| Server → Client | `newMessage` | Receive a new message (Optimistic) |
+| Server → Client | `presence:update` | Real-time update of online users |
+| Server → Client | `channel:updated` | Broadcast channel name changes |
 
 ---
 
-# 🛡 License
-MIT License – free to modify & distribute.
+## 📂 Project Structure
+
+```text
+Teamat/
+├── chat-frontend/       # React + Vite Client
+│   ├── src/
+│   │   ├── components/  # Atomic UI Components
+│   │   ├── context/     # Socket & Auth State
+│   │   ├── hooks/       # Custom React Hooks
+│   │   ├── pages/       # Layout Views
+│   │   └── layout/      # Core App Shell
+├── backend/            # Node.js + Express API
+│   ├── src/
+│   │   ├── routes/      # REST Endpoints
+│   │   ├── socket/      # WebSocket logic
+│   │   ├── models/      # Mongoose Schemas
+│   │   └── middleware/  # Auth & Logging
+```
 
 ---
 
-# 🙌 Author
+## 🎨 UI Highlight: "The Plain Style"
+Teamat follows the **Plain UI** design system—a philosophy that prioritizes content and communication over heavy gradients and shadows. The result is a high-contrast, lightning-fast interface that feels at home on any professional workstation.
+
+---
+
+## 🛡️ License
+This project is licensed under the **MIT License**.
+
+## 🙌 Author
 Developed by **Prabor Kar**  
-Portfolio: https://prabor.netlify.app  
-GitHub: https://github.com/Praborkar  
-LinkedIn: https://linkedin.com/in/prabor-kar/
-
----
+- [Portfolio](https://prabor.netlify.app)
+- [GitHub](https://github.com/Praborkar)
+- [LinkedIn](https://linkedin.com/in/prabor-kar/)
