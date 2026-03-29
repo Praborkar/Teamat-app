@@ -135,6 +135,32 @@ Teamat/
 
 ---
 
+## 🚀 Deployment Guide
+
+### 📂 Frontend (Vercel)
+1. **Prepare**: Ensure `chat-frontend/vercel.json` exists (added by Antigravity).
+2. **Deploy**: Push your code to GitHub and connect the `chat-frontend` folder to Vercel.
+3. **Build Settings**: 
+   - Framework: `Vite`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. **Environment Variables**: Add `VITE_API_URL` pointing to your deployed Backend URL.
+
+### 📂 Backend (Render / Railway)
+1. **Deploy**: Connect the `backend` folder to your persistent host.
+2. **Build Settings**:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+3. **Environment Variables**:
+   - `MONGO_URI`: Your MongoDB Atlas connection string.
+   - `JWT_SECRET`: A secure random string.
+   - `FRONTEND_URL`: Your final Vercel Production URL (e.g., `https://teamat.vercel.app`).
+
+### 🔧 Important Configuration
+The backend is now configured to dynamically allow CORS for the URL you provide in `FRONTEND_URL`. This ensures your real-time Socket.IO connections remain secure and stable.
+
+---
+
 ## 🎨 UI Highlight: "The Plain Style"
 Teamat follows the **Plain UI** design system—a philosophy that prioritizes content and communication over heavy gradients and shadows. The result is a high-contrast, lightning-fast interface that feels at home on any professional workstation.
 

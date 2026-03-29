@@ -30,8 +30,10 @@ const server = http.createServer(app);
 // CORS
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:5175",
   "https://deeref-chatapp.netlify.app",
-];
+  process.env.FRONTEND_URL, // For final production URL
+].filter(Boolean); // Remote undefined if env not set
 
 app.use(
   cors({
