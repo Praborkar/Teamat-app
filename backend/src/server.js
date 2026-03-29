@@ -2,11 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/auth');
 const channelsRoutes = require('./routes/channels');
 const messagesRoutes = require('./routes/messages');
+const userRoutes = require('./routes/users');
 
 const socketHandler = require('./socket');
 
@@ -48,6 +51,13 @@ app.use(
 
 app.use(express.json());
 
+// === STATIC FILES ===
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadDir));
+
 // === SOCKET.IO SETUP (FIXED) ===
 const { Server } = require("socket.io");
 
@@ -71,6 +81,7 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/channels', channelsRoutes);
 app.use('/messages', messagesRoutes);
+app.use('/users', userRoutes);
 
 app.get("/", (req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });

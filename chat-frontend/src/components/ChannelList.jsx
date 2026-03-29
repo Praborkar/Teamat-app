@@ -4,10 +4,11 @@ import { useChannels } from "../hooks/useChannels";
 import { useMutation, useQueryClient } from "react-query";
 import api from "../api/api";
 import { Trash2 } from "lucide-react";
+import ConfirmModal from "./ConfirmModal";
 import toast from "react-hot-toast";
 import channelIcon from "../assets/channel.png";
 
-export default function ChannelList({ search = "" }) {
+export default function ChannelList({ search = "", onSelect }) {
   const { data, isLoading } = useChannels();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -23,7 +24,7 @@ export default function ChannelList({ search = "" }) {
   });
 
   if (isLoading) {
-    return <div className="text-[#8a8e93] text-sm px-2">Loading…</div>;
+    return <div className="text-[var(--text-muted)] text-[11px] px-4 font-black uppercase tracking-widest animate-pulse">Loading…</div>;
   }
 
   const channels = Array.isArray(data) ? data : [];
@@ -33,7 +34,7 @@ export default function ChannelList({ search = "" }) {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   if (!filtered.length) {
-    return <div className="text-[#8a8e93] text-sm px-2">No channels</div>;
+    return <div className="text-[var(--text-muted)] text-[11px] px-4 font-black uppercase tracking-widest">No channels</div>;
   }
 
   return (
@@ -46,11 +47,12 @@ export default function ChannelList({ search = "" }) {
             <li key={channel._id} className="relative group">
               {/* ACTIVE BAR — subtle + minimal */}
               {isActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#5865f2] rounded-r-md" />
+                <div className="absolute left-0 top-1 bottom-1 w-[4px] bg-[var(--accent-primary)] rounded-r-full shadow-[0_0_8px_rgba(88,101,242,0.4)]" />
               )}
 
               <Link
                 to={`/app/channels/${channel._id}`}
+                onClick={() => onSelect && onSelect()}
                 className={`
                   flex items-center gap-3
                   px-3 py-2 rounded-lg text-sm
@@ -58,8 +60,8 @@ export default function ChannelList({ search = "" }) {
 
                   ${
                     isActive
-                      ? "bg-[#35363b] text-white shadow-sm"
-                      : "text-[#b5bac1] hover:bg-[#2d2f34] hover:text-white"
+                      ? "bg-[var(--bg-tertiary)] text-[var(--text-primary)] shadow-sm font-bold"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]/50 hover:text-[var(--text-primary)] font-medium"
                   }
                 `}
               >
@@ -71,20 +73,20 @@ export default function ChannelList({ search = "" }) {
 
                     ${
                       isActive
-                        ? "bg-[#1e1f22] border-[#2b2d31]"
-                        : "bg-[#2b2d31] border-[#3c3f41] group-hover:border-[#4a4d52]"
+                        ? "bg-white border-[var(--border-primary)] shadow-sm"
+                        : "bg-[var(--bg-tertiary)] border-[var(--border-primary)] group-hover:bg-white group-hover:border-[var(--text-muted)] group-hover:shadow-sm"
                     }
                   `}
                 >
-                  <img src={channelIcon} className="w-4 h-4 opacity-80" />
+                  <img src={channelIcon} className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                 </div>
 
                 {/* CHANNEL NAME */}
-                <span className="flex-1 truncate font-medium">#{channel.name}</span>
+                <span className="flex-1 truncate tracking-tight">#{channel.name}</span>
 
                 {/* UNREAD DOT */}
                 {!isActive && channel.unread > 0 && (
-                  <span className="w-2 h-2 rounded-full bg-[#5865f2]" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] shadow-[0_0_8px_rgba(88,101,242,0.6)]" />
                 )}
               </Link>
 
@@ -96,9 +98,9 @@ export default function ChannelList({ search = "" }) {
                 }}
                 className="
                   absolute right-3 top-1/2 -translate-y-1/2
-                  text-[#8a8e93] hover:text-red-500
+                  text-[var(--text-muted)] hover:text-red-500
                   opacity-0 group-hover:opacity-100
-                  transition duration-150
+                  transition-all duration-200
                 "
               >
                 <Trash2 size={16} />
@@ -109,35 +111,18 @@ export default function ChannelList({ search = "" }) {
       </ul>
 
       {/* DELETE CONFIRM MODAL */}
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[#2a2b2f] border border-[#3a3c42] rounded-xl p-6 w-80 shadow-lg">
-            <h2 className="text-lg font-semibold text-white">Delete Channel</h2>
-
-            <p className="text-[#b5bac1] text-sm mt-2">
-              Delete <span className="text-white">#{confirmDelete.name}</span>?
-            </p>
-
-            <div className="flex justify-end mt-5 gap-3">
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="px-4 py-1 rounded bg-[#333438] text-[#ccc] hover:bg-[#3c3e42]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  deleteMutation.mutate(confirmDelete._id);
-                  setConfirmDelete(null);
-                }}
-                className="px-4 py-1 rounded bg-red-500 text-white hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal 
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          deleteMutation.mutate(confirmDelete._id);
+          setConfirmDelete(null);
+        }}
+        title="Delete Channel"
+        description={`Are you sure you want to delete #${confirmDelete?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+      />
     </>
   );
 }

@@ -28,29 +28,16 @@ export default function OnlineUsersPanel() {
         relative 
         h-full flex flex-col
         w-full
-
-        bg-[#1e1f22]/60
-        backdrop-blur-xl
-        rounded-[28px]
-        border border-[#2b2d31]/70
-        shadow-[0_8px_30px_rgba(0,0,0,0.45)]
+        bg-[var(--bg-primary)]
         overflow-hidden
       "
     >
-      {/* Subtle glossy overlay */}
-      <div
-        className="
-          absolute inset-0 pointer-events-none
-          bg-gradient-to-b from-white/10 to-transparent
-          opacity-10
-        "
-      />
 
       {/* Content */}
       <div className="px-5 py-6 z-10 overflow-y-auto">
 
         {/* Header */}
-        <h3 className="text-[11px] font-semibold text-[#8a8e93] uppercase tracking-wide mb-4">
+        <h3 className="text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-6">
           Online — {onlineUsers.length}
         </h3>
 
@@ -61,9 +48,9 @@ export default function OnlineUsersPanel() {
               key={user._id}
               className="
                 flex items-center gap-4 px-3 py-2
-                rounded-lg cursor-pointer
-                transition
-                hover:bg-white/5
+                rounded-2xl cursor-pointer
+                transition-all
+                hover:bg-[var(--bg-secondary)]
               "
             >
               {/* Avatar */}
@@ -81,20 +68,20 @@ export default function OnlineUsersPanel() {
                 {/* Status dot */}
                 <span
                   className="
-                    absolute bottom-0 right-0
-                    w-3 h-3 rounded-full bg-green-500
-                    ring-2 ring-[#1e1f22]
+                    absolute bottom-0.5 right-0.5
+                    w-3.5 h-3.5 rounded-full bg-[#23a559]
+                    ring-2 ring-[var(--bg-primary)]
                   "
                 />
               </div>
 
               {/* Name + Status */}
               <div className="leading-tight">
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-bold text-[var(--text-primary)]">
                   {user.name}
                 </p>
 
-                <p className="text-xs text-[#8a8e93]">
+                <p className="text-[11px] text-[var(--text-muted)] font-medium">
                   Online
                 </p>
               </div>

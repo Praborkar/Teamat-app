@@ -1,5 +1,7 @@
 // socket.js (or whatever your socket entry file is)
 const jwt = require("jsonwebtoken");
+const Filter = require("bad-words");
+const filter = new Filter();
 const Message = require("../models/Message");
 const Channel = require("../models/Channel");
 const Presence = require("../models/Presence");
@@ -112,14 +114,29 @@ module.exports = function (io) {
     });
 
     // --- SEND MESSAGE (optimistic + persist) ---
-    socket.on("sendMessage", async ({ channelId, text }) => {
-      if (!channelId || !text) return;
+    socket.on("sendMessage", async ({ channelId, text, fileUrl, fileType, clientSideId }) => {
+      let filteredText = text;
+      if (text) {
+        try {
+          filteredText = filter.clean(text);
+        } catch (err) {
+          console.error("Filter error:", err);
+        }
+      }
 
       const tempMsg = {
-        _id: Date.now(),
+        _id: clientSideId || `temp-${Date.now()}`,
+        clientSideId,
         channelId,
-        text,
-        user: { _id: userId },
+        text: filteredText,
+        fileUrl,
+        fileType,
+        user: { 
+          _id: userId,
+          name: userName,
+          email: userEmail,
+          avatarUrl: userAvatar,
+        },
         createdAt: new Date(),
         optimistic: true,
       };
@@ -128,7 +145,7 @@ module.exports = function (io) {
       io.to(channelId).emit("newMessage", tempMsg);
 
       try {
-        const msg = new Message({ channelId, userId, text });
+        const msg = new Message({ channelId, userId, text: filteredText, fileUrl, fileType });
         await msg.save();
 
         const fullMsg = await Message.findById(msg._id)
@@ -138,6 +155,7 @@ module.exports = function (io) {
         const finalMsg = {
           ...fullMsg,
           user: fullMsg.userId,
+          clientSideId,
         };
 
         io.to(channelId).emit("message:update", finalMsg);
@@ -145,8 +163,27 @@ module.exports = function (io) {
         console.error("Error saving message:", err);
       }
     });
-
-    // --- HEARTBEAT (client pings frequently) ---
+ 
+     // --- TYPING INDICATOR ---
+     socket.on("typing", ({ channelId }) => {
+       if (!channelId) return;
+       // Broadcast to others in the same channel
+       socket.to(channelId).emit("user:typing", {
+         channelId,
+         userId,
+         userName,
+       });
+     });
+ 
+     socket.on("stopTyping", ({ channelId }) => {
+       if (!channelId) return;
+       socket.to(channelId).emit("user:stopTyping", {
+         channelId,
+         userId,
+       });
+     });
+ 
+     // --- HEARTBEAT (client pings frequently) ---
     socket.on("heartbeat", () => {
       const prev = memoryPresence.get(userId) || {};
       memoryPresence.set(userId, {

@@ -63,10 +63,13 @@ export function useMessages(channelId) {
 
       const updatedPages = old.pages.map((page) => {
         const updatedMessages = page.messages.map((msg) => {
-          // Replace only the optimistic message with matching text
-          if (msg.optimistic && msg.text === finalMsg.text) {
-            return finalMsg;
-          }
+          // Replace only the optimistic message with matching clientSideId or text
+          const isMatch = msg.optimistic && (
+            msg._id === finalMsg.clientSideId || 
+            (msg.text === finalMsg.text && (msg.user?._id === "me" || msg.user?._id === finalMsg.user?._id))
+          );
+
+          if (isMatch) return finalMsg;
           return msg;
         });
 

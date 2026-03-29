@@ -43,10 +43,15 @@ export default function MessageList({
     }
   }, [hasMore, loadingMore, loadMore]);
 
-  // Auto-scroll when new messages arrive
+  // Auto-scroll logic
   useEffect(() => {
-    if (isNearBottom()) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (!el) return;
+
+    // If it's the first time messages are loaded (scrollTop is at the very top and we have messages)
+    // or if we are already near the bottom when a new message arrives
+    if (el.scrollTop === 0 || isNearBottom()) {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
   }, [sorted.length]);
 
@@ -71,7 +76,7 @@ export default function MessageList({
 
   if (!sorted.length) {
     return (
-      <div className="flex-1 flex items-center justify-center text-[#9ca0a6] text-sm bg-[#313338]">
+      <div className="flex-1 flex items-center justify-center text-[var(--text-muted)] text-sm bg-[var(--bg-primary)]">
         Start a conversation…
       </div>
     );
@@ -84,16 +89,16 @@ export default function MessageList({
       className="
         flex-1 overflow-y-auto
         px-6 py-5
-        bg-[#313338]
-        text-[#f2f3f5]
+        bg-[var(--bg-primary)]
+        text-[var(--text-primary)]
         flex flex-col
         scroll-smooth
-        scrollbar-thin scrollbar-thumb-[#2b2d31] scrollbar-track-transparent
+        scrollbar-thin scrollbar-thumb-[var(--border-primary)] scrollbar-track-transparent
       "
     >
       {/* LOADING MORE */}
       {loadingMore && (
-        <div className="text-center text-xs text-[#8a8e93] mb-3 animate-pulse">
+        <div className="text-center text-[11px] text-[var(--text-muted)] mb-4 font-black uppercase tracking-widest animate-pulse">
           Loading older messages…
         </div>
       )}
@@ -122,13 +127,13 @@ export default function MessageList({
               <div className="flex items-center justify-center my-6">
                 <span
                   className="
-                    text-[11px] text-[#adb1b8]
-                    px-4 py-1.5
-                    bg-[#2b2d31]/80
-                    border border-[#3c3f41]
+                    text-[11px] text-[var(--text-muted)]
+                    px-5 py-2
+                    bg-[var(--bg-secondary)]
+                    border border-[var(--border-primary)]
                     rounded-full
-                    tracking-wider
-                    shadow-[0_2px_10px_rgba(0,0,0,0.35)]
+                    tracking-widest font-black uppercase
+                    shadow-[var(--shadow-sm)]
                   "
                 >
                   {formatDateLabel(msg.createdAt)}

@@ -1,20 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import AppLayout from './layout/AppLayout'
+import SplashScreen from './components/SplashScreen'
 import { useAuth } from './hooks/useAuth'
 import { Toaster } from "react-hot-toast"
 
 export default function App() {
   const { user, loading } = useAuth()
+  const [showSplash, setShowSplash] = useState(true)
 
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center text-lg font-space">
-        Loading...
-      </div>
-    )
+  if (loading || showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />
   }
 
   return (

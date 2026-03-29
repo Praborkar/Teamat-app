@@ -6,6 +6,7 @@ import App from './App';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketProvider';
+import { LanguageProvider } from './context/LanguageContext';
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <BrowserRouter>
         <SocketProvider>
-          <App />
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
         </SocketProvider>
       </BrowserRouter>
     </AuthProvider>
