@@ -89,8 +89,8 @@ router.post('/:messageId/translate', auth, async (req, res) => {
       return res.json({ translatedText: existing });
     }
 
-    // Call Google Translate unofficial API (better auto-detection)
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(message.text)}`;
+    // Use a more stable endpoint (at/t instead of gtx/single)
+    const url = `https://translate.googleapis.com/translate_a/t?client=at&sl=auto&tl=${targetLanguage}&q=${encodeURIComponent(message.text)}`;
     
     console.log(`[Translation] Requesting: ${targetLanguage} for message ${messageId}`);
 
@@ -100,57 +100,69 @@ router.post('/:messageId/translate', auth, async (req, res) => {
       }
     };
 
-    https.get(url, options, (apiRes) => {
-      let data = '';
-      
-      if (apiRes.statusCode !== 200) {
-        console.error(`[Translation] API Error: Status ${apiRes.statusCode}`);
-        return res.status(500).json({ message: `Translation API error (${apiRes.statusCode})` });
-      }
-
-      apiRes.on('data', (chunk) => { data += chunk; });
-      apiRes.on('end', async () => {
-        try {
-          const result = JSON.parse(data);
-          
-          if (!result || !Array.isArray(result) || !result[0]) {
-            console.error('[Translation] Unexpected response format:', data);
-            throw new Error('Invalid response format');
-          }
-
-          // Google API returns: [[["translatedText", "sourceText", ...]], ...]
-          const translatedText = result[0]
-            .filter(x => x && x[0])
-            .map(x => x[0])
-            .join('');
-
-          if (!translatedText) {
-            throw new Error('Empty translation result');
-          }
-
-          // Update message with new translation
-          if (!message.translations) message.translations = new Map();
-          
-          if (typeof message.translations.set === 'function') {
-            message.translations.set(targetLanguage, translatedText);
-          } else {
-            message.translations[targetLanguage] = translatedText;
-          }
-          
-          message.markModified('translations');
-          await message.save();
-
-          console.log(`[Translation] Success for ${messageId} (${targetLanguage})`);
-          res.json({ translatedText });
-        } catch (e) {
-          console.error('[Translation] Parse Error:', e.message, 'Data:', data);
-          res.status(500).json({ message: 'Error parsing translation' });
+    const makeRequest = (targetUrl) => {
+      https.get(targetUrl, options, (apiRes) => {
+        let data = '';
+        
+        // Handle Redirects (301, 302)
+        if ((apiRes.statusCode === 301 || apiRes.statusCode === 302) && apiRes.headers.location) {
+          console.log(`[Translation] Following redirect to: ${apiRes.headers.location}`);
+          return makeRequest(apiRes.headers.location);
         }
+
+        if (apiRes.statusCode !== 200) {
+          console.error(`[Translation] API Error: Status ${apiRes.statusCode}`);
+          return res.status(500).json({ message: `Translation API error (${apiRes.statusCode})` });
+        }
+
+        apiRes.on('data', (chunk) => { data += chunk; });
+        apiRes.on('end', async () => {
+          try {
+            const result = JSON.parse(data);
+            
+            // Format for /translate_a/t is [["translatedText", "sourceLang"]]
+            if (!result || !Array.isArray(result) || !result[0]) {
+              console.error('[Translation] Unexpected response format:', data);
+              throw new Error('Invalid response format');
+            }
+
+            let translatedText = '';
+            if (Array.isArray(result[0])) {
+              translatedText = result[0][0]; // Primary format
+            } else if (typeof result[0] === 'string') {
+              translatedText = result[0]; // Fallback
+            }
+
+            if (!translatedText) {
+              throw new Error('Empty translation result');
+            }
+
+            // Update message with new translation
+            if (!message.translations) message.translations = new Map();
+            
+            if (typeof message.translations.set === 'function') {
+              message.translations.set(targetLanguage, translatedText);
+            } else {
+              message.translations[targetLanguage] = translatedText;
+            }
+            
+            message.markModified('translations');
+            await message.save();
+
+            console.log(`[Translation] Success for ${messageId} (${targetLanguage})`);
+            res.json({ translatedText });
+          } catch (e) {
+            console.error('[Translation] Parse Error:', e.message, 'Data:', data);
+            res.status(500).json({ message: 'Error parsing translation' });
+          }
+        });
+      }).on('error', (err) => {
+        console.error('[Translation] Connection Error:', err.message);
+        res.status(500).json({ message: 'Translation connection failed' });
       });
-    }).on('error', (err) => {
-      console.error('[Translation] Connection Error:', err.message);
-      res.status(500).json({ message: 'Translation connection failed' });
-    });
+    };
+
+    makeRequest(url);
 
   } catch (err) {
     console.error(err);
