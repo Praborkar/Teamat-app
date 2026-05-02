@@ -76,39 +76,80 @@ router.post('/:messageId/translate', auth, async (req, res) => {
     if (!message.text) return res.status(400).json({ message: 'Message has no text to translate' });
 
     // Check if already translated (and ensure it's not a previous error message)
-    if (message.translations && message.translations.has(targetLanguage)) {
-      const existing = message.translations.get(targetLanguage);
-      if (!existing.includes("'AUTO' IS AN INVALID SOURCE LANGUAGE")) {
-        return res.json({ translatedText: existing });
+    let existing = null;
+    if (message.translations) {
+      if (typeof message.translations.get === 'function') {
+        existing = message.translations.get(targetLanguage);
+      } else {
+        existing = message.translations[targetLanguage];
       }
+    }
+
+    if (existing && typeof existing === 'string' && !existing.includes("'AUTO' IS AN INVALID SOURCE LANGUAGE")) {
+      return res.json({ translatedText: existing });
     }
 
     // Call Google Translate unofficial API (better auto-detection)
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(message.text)}`;
     
-    https.get(url, (apiRes) => {
+    console.log(`[Translation] Requesting: ${targetLanguage} for message ${messageId}`);
+
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    };
+
+    https.get(url, options, (apiRes) => {
       let data = '';
+      
+      if (apiRes.statusCode !== 200) {
+        console.error(`[Translation] API Error: Status ${apiRes.statusCode}`);
+        return res.status(500).json({ message: `Translation API error (${apiRes.statusCode})` });
+      }
+
       apiRes.on('data', (chunk) => { data += chunk; });
       apiRes.on('end', async () => {
         try {
           const result = JSON.parse(data);
+          
+          if (!result || !Array.isArray(result) || !result[0]) {
+            console.error('[Translation] Unexpected response format:', data);
+            throw new Error('Invalid response format');
+          }
+
           // Google API returns: [[["translatedText", "sourceText", ...]], ...]
-          const translatedText = result[0].map(x => x[0]).join('');
+          const translatedText = result[0]
+            .filter(x => x && x[0])
+            .map(x => x[0])
+            .join('');
+
+          if (!translatedText) {
+            throw new Error('Empty translation result');
+          }
 
           // Update message with new translation
           if (!message.translations) message.translations = new Map();
-          message.translations.set(targetLanguage, translatedText);
+          
+          if (typeof message.translations.set === 'function') {
+            message.translations.set(targetLanguage, translatedText);
+          } else {
+            message.translations[targetLanguage] = translatedText;
+          }
+          
+          message.markModified('translations');
           await message.save();
 
+          console.log(`[Translation] Success for ${messageId} (${targetLanguage})`);
           res.json({ translatedText });
         } catch (e) {
-          console.error('Translation parse error:', e);
-          res.status(500).json({ message: 'Translation service error' });
+          console.error('[Translation] Parse Error:', e.message, 'Data:', data);
+          res.status(500).json({ message: 'Error parsing translation' });
         }
       });
     }).on('error', (err) => {
-      console.error('Translation API error:', err);
-      res.status(500).json({ message: 'Translation API connection error' });
+      console.error('[Translation] Connection Error:', err.message);
+      res.status(500).json({ message: 'Translation connection failed' });
     });
 
   } catch (err) {

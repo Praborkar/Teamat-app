@@ -4,6 +4,7 @@ import defaultAvatar from "../assets/profile.png";
 import { FiFileText, FiGlobe, FiRotateCcw } from "react-icons/fi";
 import { useLanguage } from "../context/LanguageContext";
 import api from "../api/api";
+import { toast } from "react-hot-toast";
 
 export default function MessageItem({ message: initialMessage, currentUserId, grouped }) {
   const [message, setMessage] = React.useState(initialMessage);
@@ -40,8 +41,11 @@ export default function MessageItem({ message: initialMessage, currentUserId, gr
           [preferredLanguage]: res.data.translatedText
         }
       }));
+      toast.success("Message translated!");
     } catch (err) {
       console.error("Translation failed", err);
+      const errorMsg = err.response?.data?.message || "Translation failed";
+      toast.error(errorMsg);
     } finally {
       setIsTranslating(false);
     }
@@ -128,7 +132,7 @@ export default function MessageItem({ message: initialMessage, currentUserId, gr
             )}
 
             {/* Translate Trigger Button (visible on hover) */}
-            {!translation && !isTranslating && (
+            {!translation && !isTranslating && !message.optimistic && (
               <button
                 onClick={handleTranslate}
                 className={`
